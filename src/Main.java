@@ -1,3 +1,5 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Main {
@@ -19,6 +21,21 @@ public class Main {
 
             // Validate account
             var authenticatedAcc = validateLogin(accounts,accNum,pin);
+            if(!(authenticatedAcc == null)){
+                System.out.println("=== Transaction Screen ===");
+                System.out.println("" +
+                        "1. Withdraw \n" +
+                        "2. Fund Transfer \n" +
+                        "3. Exit \n" +
+                        "Please choose option[3]: ");
+                String input = scanner.nextLine();
+                switch (input){
+                    case "1" -> withdrawScreen(authenticatedAcc,scanner);
+                    case "2" -> System.out.println("dasda");
+                    default -> authenticatedAcc=null;
+                }
+
+            }
 
         }
 
@@ -56,4 +73,52 @@ public class Main {
         return accounts.stream().anyMatch(
                 acc -> acc.getAccountNumber().equals(accNum) && acc.getPin().equals(pin));
     }
+
+    public static void withdrawScreen(Account account, Scanner scanner){
+        System.out.println("=== Withdraw Screen ===");
+        System.out.println("" +
+                "1. $10 \n" +
+                "2. $50 \n" +
+                "3. 100 \n" +
+                "4. Other \n" +
+                "5. Back \n" +
+                "Please choose option[5]: ");
+        String input = scanner.nextLine();
+        int amount = 0;
+        switch (input){
+            case "1" -> amount = 10;
+            case "2" -> amount = 50;
+            case "3" -> amount = 100;
+            case "4" -> {
+                try{
+                    System.out.println("Other withdraw amount to withdraw: ");
+                    amount = Integer.parseInt(scanner.nextLine());
+                    if(amount>1000){
+                        System.out.println("Maximum amount to withdraw is $1000");
+                    }
+                    if(amount % 10 != 0){
+                        System.out.println("Invalid amount");
+                    }
+                }catch (NumberFormatException e){
+                    System.out.println("Invalid amount");
+                }finally {
+                    scanner.nextLine();
+                }
+            }
+            default -> withdrawScreen(account,scanner); //TODO go back to Transaction screen instead of back to login
+        }
+
+        if(amount > 0){
+            if(amount > account.getBalance()){
+                System.out.println("Insufficient balance $" + amount);
+            }
+            account.setBalance(account.getBalance()-amount);
+            DateTimeFormatter dateTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm a");
+            System.out.println("Summary \n" +
+                    "Date: "+ LocalDateTime.now().format(dateTime) +
+                    "\nWithdraw: $" + amount +
+                    "\nBalance: " + account.getBalance());
+        }
+    }
+
 }
