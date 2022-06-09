@@ -109,8 +109,6 @@ public class Main {
                     "\nDate: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm a")) +
                     "\nWithdraw: $" + amount +
                     "\nBalance: " + account.getBalance());
-            System.out.println("1. Transaction");
-            System.out.println("2. Exit");
             transactionScreen(account,accounts,scanner);
         }
     }
@@ -154,17 +152,18 @@ public class Main {
             System.out.println("Invalid Account");
             return;
         }
-        if (!reference.isEmpty() || reference.matches("\\d+")) {
+        if (!reference.isEmpty() && !reference.matches("\\d+")) {
             System.out.println("Invalid Reference Number");
+            return;
         }
         try {
             var dest = findAcc(accounts, destination);
             if (Integer.parseInt(amount) > 1000) {
-                System.out.println("Maximum amount to withdraw is $1000");
+                System.out.println("Maximum amount to transfer is $1000");
                 return;
             }
             if (Integer.parseInt(amount) < 1) {
-                System.out.println("Minimum amount to withdraw is $1");
+                System.out.println("Minimum amount to transfer is $1");
                 return;
             }
             if (account.getBalance() > Integer.parseInt(amount) ) {
@@ -187,6 +186,7 @@ public class Main {
                 "\n Balance : " + account.getBalance());
         System.out.println("1. Transaction");
         System.out.println("2. Exit");
+        System.out.println("Choose Option[2]");
         String input = scanner.nextLine();
         switch (input) {
             case "1" -> transactionScreen(account, accounts, scanner);
