@@ -22,36 +22,10 @@ public class Main {
         }
         accountService = new AccountService(new AccountRepository(Path.of(args[0])));
         transactionService = new TransactionService(new TransactionRepository(Path.of(args[1])), accountService);
-        var accounts = accountService.getAll();
-        var trxHistories = new ArrayList<>(transactionService.getAll());
-
 
         while (true) {
             welcomeScreen();
-            System.out.println("=== ATM Welcome Screen === ");
-            System.out.println("Enter entity.Account Number: ");
-            var accNum = scanner.nextLine();
-            System.out.println("Enter PIN: ");
-            var pin = scanner.nextLine();
-
-            // Validate account
-//            var authenticatedAcc = accountService.validateLogin(accounts, accNum, pin);
-//            if (!(authenticatedAcc == null)) {
-//                System.out.println("=== Transaction Screen ===");
-//                System.out.println("" +
-//                        "1. Withdraw \n" +
-//                        "2. Fund Transfer \n" +
-//                        "3. Transaction History \n" +
-//                        "4. Exit \n" +
-//                        "Please choose option[4]: ");
-//                String input = scanner.nextLine();
-//                switch (input) {
-//                    case "1" -> withdrawScreen();
-//                    case "2" -> transferScreen();
-//                    case "3" -> transactionHistoryList();
-//                    default -> authenticatedAcc = null;
-//                }
-//            }
+            break;
         }
     }
 
@@ -171,7 +145,7 @@ public class Main {
     }
 
     public static void transactionHistoryScreen(){
-        var accTrx = transactionService.getAll().stream()
+        var accTrx = transactionService.getTrxHistories().stream()
                 .filter(trx -> trx.getAccountNumber().equals(accountService.getLoggedAcc().getAccountNumber()))
                 .limit(10)
                 .toList();

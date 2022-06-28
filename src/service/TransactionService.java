@@ -6,11 +6,13 @@ import repository.TransactionRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
+    private List<Transaction> trxHistories = new ArrayList<>();
 
     public TransactionService(TransactionRepository transactionRepository, AccountService accountService){
         this.transactionRepository = transactionRepository;
@@ -19,6 +21,14 @@ public class TransactionService {
 
     public List<Transaction> getAll(){
         return transactionRepository.readTransactions();
+    }
+
+    public boolean addTrx(Transaction transaction){
+        return trxHistories.add(transaction);
+    }
+
+    public List<Transaction> getTrxHistories(){
+        return trxHistories;
     }
     public Account withdraw(int amount){
         var account = accountService.getLoggedAcc();
@@ -31,6 +41,8 @@ public class TransactionService {
                 "\nWithdraw: $" + amount +
                 "\nBalance: " + account.getBalance());
         //transactionRepository.readTransactions().add(new Transaction(account.getAccountNumber(), Transaction.TransactionType.WITHDRAW,amount));
+        var trx = new Transaction(account.getAccountNumber(), Transaction.TransactionType.WITHDRAW,amount);
+        addTrx(trx);
         return account;
     }
     public Account findAcc(String accNumber) {
@@ -61,13 +73,14 @@ public class TransactionService {
             if (accountService.getLoggedAcc().getBalance() > amount) {
                 accountService.getLoggedAcc().setBalance(accountService.getLoggedAcc().getBalance() - amount);
                 dest.setBalance(dest.getBalance() + amount);
+            }else{
+                System.out.println("Insufficient balance $" + amount);
             }
-            System.out.println("Insufficient balance $" + amount);
         } catch (NumberFormatException e) {
             System.out.println("Invalid amount");
         }
         var trx =  new Transaction(accountService.getLoggedAcc().getAccountNumber(), Transaction.TransactionType.TRANSFER, amount);
-        //transactionRepository.readTransactions().add(trx);
+        addTrx(trx);
         return trx;
     }
 }
