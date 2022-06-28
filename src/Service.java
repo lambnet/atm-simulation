@@ -1,4 +1,5 @@
 import entity.Account;
+import entity.Transaction;
 import repository.AccountRepository;
 import repository.TransactionRepository;
 
@@ -7,14 +8,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Service {
-    private final AccountRepository accountRepository;
-    private final TransactionRepository transactionRepository;
-
-    public Service(AccountRepository accountRepository, TransactionRepository transactionRepository){
-        this.accountRepository = accountRepository;
-        this.transactionRepository = transactionRepository;
-    }
-
+    //    private static AccountRepository accountRepository;
+//    private static TransactionRepository transactionRepository;
+//
+//    public Service(AccountRepository accountRepository, TransactionRepository transactionRepository){
+//        this.accountRepository = accountRepository;
+//        this.transactionRepository = transactionRepository;
+//    }
     public static Account validateLogin(List<Account> accounts, String accNum, String pin) {
         if (accNum.length() != 6) {
             System.out.println("Account Number should have 6 digits length");
@@ -54,7 +54,7 @@ public class Service {
                 acc -> acc.getAccountNumber().equals(accNum));
     }
 
-    public static void withdrawScreen(Account account,List<Account> accounts,Scanner scanner) {
+    public static Transaction withdrawScreen(Account account, List<Account> accounts, Scanner scanner) {
         System.out.println("=== Withdraw Screen ===");
         System.out.println("" +
                 "1. $10 \n" +
@@ -85,9 +85,8 @@ public class Service {
                     scanner.nextLine();
                 }
             }
-            default -> transactionScreen(account,accounts,scanner);
+            default -> transactionScreen(account, accounts, scanner);
         }
-
         if (amount > 0) {
             if (amount > account.getBalance()) {
                 System.out.println("Insufficient balance $" + amount);
@@ -97,16 +96,17 @@ public class Service {
                     "\nDate: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm a")) +
                     "\nWithdraw: $" + amount +
                     "\nBalance: " + account.getBalance());
-            transactionScreen(account,accounts,scanner);
+            transactionScreen(account, accounts, scanner);
         }
+        return new Transaction(account.getAccountNumber(), Transaction.TransactionType.WITHDRAW, amount);
     }
 
-    public static void transferScreen(Account account, List<Account> accounts, Scanner scanner) {
+    public static Transaction transferScreen(Account account, List<Account> accounts, Scanner scanner) {
         System.out.println("=== Transfer Fund Screen ===");
         System.out.println("Please enter destination account and press enter to continue or press enter to go back to Transaction: ");
         String destination = scanner.nextLine();
         if (destination.equals("")) {
-            transactionScreen(account,accounts,scanner);
+            transactionScreen(account, accounts, scanner);
         }
         System.out.println("Please enter transfer amount and press enter to continue or press enter to go back to Transaction: ");
         String amount = scanner.nextLine();
@@ -121,8 +121,12 @@ public class Service {
                 "\n Choose option[2]; ");
         String option = scanner.nextLine();
         switch (option) {
-            case "1" -> processTransfer(account, destination, accounts, amount, reference, scanner);
-            case "2" -> account = null;
+            case "1" -> {
+                return processTransfer(account, destination, accounts, amount, reference, scanner);
+            }
+            default -> {
+                return null;
+            }
         }
     }
 
@@ -132,37 +136,37 @@ public class Service {
                 .findAny().get();
     }
 
-    public static void processTransfer(Account account, String destination, List<Account> accounts,
-                                       String amount, String reference, Scanner scanner) {
-
+    public static Transaction processTransfer(Account account, String destination, List<Account> accounts,
+                                              String amount, String reference, Scanner scanner) {
         if (!destination.matches("\\d+") || !Service.IsExist(accounts, destination)) {
             System.out.println("Invalid Account");
-            return;
+            return null;
         }
         if (!reference.isEmpty() && !reference.matches("\\d+")) {
             System.out.println("Invalid Reference Number");
-            return;
+            return null;
         }
         try {
             var dest = findAcc(accounts, destination);
             if (Integer.parseInt(amount) > 1000) {
                 System.out.println("Maximum amount to transfer is $1000");
-                return;
+                return null;
             }
             if (Integer.parseInt(amount) < 1) {
                 System.out.println("Minimum amount to transfer is $1");
-                return;
+                return null;
             }
-            if (account.getBalance() > Integer.parseInt(amount) ) {
+            if (account.getBalance() > Integer.parseInt(amount)) {
                 account.setBalance(account.getBalance() - Integer.parseInt(amount));
                 dest.setBalance(dest.getBalance() + Integer.parseInt(amount));
-                transferSummaryScreen(account, accounts,destination, amount, reference, scanner);
+                transferSummaryScreen(account, accounts, destination, amount, reference, scanner);
             }
             System.out.println("Insufficient balance $" + amount);
-            transactionScreen(account, accounts,scanner);
+            transactionScreen(account, accounts, scanner);
         } catch (NumberFormatException e) {
             System.out.println("Invalid amount");
         }
+        return new Transaction(account.getAccountNumber(), Transaction.TransactionType.TRANSFER, Double.parseDouble(amount));
     }
 
     public static void transferSummaryScreen(Account account, List<Account> accounts, String destination, String amount, String ref, Scanner scanner) {
@@ -181,17 +185,32 @@ public class Service {
         }
     }
 
+    public static void transactionHistoryScreen(Account account, List<Transaction> transactions, Scanner scanner) {
+        var accTrx = transactions.stream()
+                                .filter(trx -> trx.getAccountNumber().equals(account.getAccountNumber()))
+                                .limit(10)
+                                .toList();
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm a");
+        System.out.println("Transaction Type || Account Number || Amount || Created At");
+        for(var trx : accTrx){
+            System.out.println(trx.getTransactionType()+"||"+trx.getAccountNumber()+"||"+trx.getAmount()+"||"+trx.getCreatedAt().format(dateFormat));
+        }
+
+    }
+
     public static void transactionScreen(Account account, List<Account> accounts, Scanner scanner) {
         System.out.println("=== Transaction Screen ===");
         System.out.println("" +
                 "1. Withdraw \n" +
                 "2. Fund Transfer \n" +
-                "3. Exit \n" +
-                "Please choose option[3]: ");
+                "3. Transaction History \n" +
+                "4. Exit \n" +
+                "Please choose option[4]: ");
         String input = scanner.nextLine();
         switch (input) {
-            case "1" -> withdrawScreen(account, accounts,scanner);
+            case "1" -> withdrawScreen(account, accounts, scanner);
             case "2" -> transferScreen(account, accounts, scanner);
+            //case "3" -> transactionHistoryScreen(account,transactions);
             default -> account = null;
         }
     }

@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Transaction {
-    private enum TransactionType{
+    public enum TransactionType{
         WITHDRAW, TRANSFER
     }
     private UUID id;
