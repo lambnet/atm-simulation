@@ -30,6 +30,7 @@ public class TransactionService {
     public List<Transaction> getTrxHistories(){
         return trxHistories;
     }
+
     public Account withdraw(int amount){
         var account = accountService.getLoggedAcc();
         if (amount > account.getBalance()) {
@@ -41,10 +42,11 @@ public class TransactionService {
                 "\nWithdraw: $" + amount +
                 "\nBalance: " + account.getBalance());
         //transactionRepository.readTransactions().add(new Transaction(account.getAccountNumber(), Transaction.TransactionType.WITHDRAW,amount));
-        var trx = new Transaction(account.getAccountNumber(), Transaction.TransactionType.WITHDRAW,amount);
+        var trx = new Transaction(account.getAccountNumber(),"######", Transaction.TransactionType.WITHDRAW,amount);
         addTrx(trx);
         return account;
     }
+
     public Account findAcc(String accNumber) {
         return accountService.getAll().stream()
                 .filter(a -> a.getAccountNumber().equals(accNumber))
@@ -79,7 +81,7 @@ public class TransactionService {
         } catch (NumberFormatException e) {
             System.out.println("Invalid amount");
         }
-        var trx =  new Transaction(accountService.getLoggedAcc().getAccountNumber(), Transaction.TransactionType.TRANSFER, amount);
+        var trx =  new Transaction(accountService.getLoggedAcc().getAccountNumber(),destination, Transaction.TransactionType.TRANSFER, amount);
         addTrx(trx);
         return trx;
     }

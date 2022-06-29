@@ -9,14 +9,16 @@ public class Transaction {
         WITHDRAW, TRANSFER
     }
     private UUID id;
-    private String accountNumber;
+    private String senderAccountNumber;
+    private String receiverAccountNumber;
     private TransactionType transactionType;
     private double amount;
     private OffsetDateTime createdAt;
 
-    public Transaction(String accountNumber, TransactionType transactionType, double amount) {
+    public Transaction(String senderAccountNumber, String receiverAccountNumber, TransactionType transactionType, double amount) {
         this.id = UUID.randomUUID();
-        this.accountNumber = accountNumber;
+        this.senderAccountNumber = senderAccountNumber;
+        this.receiverAccountNumber = receiverAccountNumber;
         this.transactionType = transactionType;
         this.amount = amount;
         this.createdAt = OffsetDateTime.now();
@@ -30,12 +32,20 @@ public class Transaction {
         this.id = id;
     }
 
-    public String getAccountNumber() {
-        return accountNumber;
+    public String getSenderAccountNumber() {
+        return senderAccountNumber;
     }
 
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
+    public void setSenderAccountNumber(String senderAccountNumber) {
+        this.senderAccountNumber = senderAccountNumber;
+    }
+
+    public String getReceiverAccountNumber() {
+        return receiverAccountNumber;
+    }
+
+    public void setReceiverAccountNumber(String receiverAccountNumber) {
+        this.receiverAccountNumber = receiverAccountNumber;
     }
 
     public TransactionType getTransactionType() {
@@ -61,5 +71,4 @@ public class Transaction {
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
 }

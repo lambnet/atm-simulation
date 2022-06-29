@@ -1,3 +1,4 @@
+import entity.Transaction;
 import repository.AccountRepository;
 import repository.TransactionRepository;
 import service.AccountService;
@@ -6,6 +7,7 @@ import service.TransactionService;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Scanner;
 
 import static java.util.Objects.isNull;
@@ -146,13 +148,14 @@ public class Main {
 
     public static void transactionHistoryScreen(){
         var accTrx = transactionService.getTrxHistories().stream()
-                .filter(trx -> trx.getAccountNumber().equals(accountService.getLoggedAcc().getAccountNumber()))
+                .filter(trx -> trx.getSenderAccountNumber().equals(accountService.getLoggedAcc().getAccountNumber()))
+                .sorted(Comparator.comparing(Transaction::getCreatedAt).reversed())
                 .limit(10)
                 .toList();
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm a");
-        System.out.println("Transaction Type || Account Number || Amount || Created At");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        System.out.println("Transaction Type || Sender Account Number || Receiver Account Number || Amount || Created At");
         for(var trx : accTrx){
-            System.out.println(trx.getTransactionType()+"||"+trx.getAccountNumber()+"||"+trx.getAmount()+"||"+trx.getCreatedAt().format(dateFormat));
+            System.out.println(trx.getTransactionType()+"||"+trx.getSenderAccountNumber()+"||"+trx.getReceiverAccountNumber()+"||"+trx.getAmount()+"||"+trx.getCreatedAt().format(dateFormat));
         }
     }
 

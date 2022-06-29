@@ -1,1 +1,1 @@
-id,Account Number,Transaction Type,Amount,Timestamp
+id,Sender Account Number,Receiver Account Number,Transaction Type,Amount,Timestamp

@@ -33,9 +33,9 @@ public class TransactionRepository {
 
     private Transaction getTransaction(String line){
         String[] fields = line.split(",");
-        if(fields.length != 5){
+        if(fields.length != 6){
             throw new RuntimeException("Invalid line in csv file " + line);
         }
-        return new Transaction(fields[1], Transaction.TransactionType.valueOf(fields[2]),Double.parseDouble(fields[3]));
+        return new Transaction(fields[1], fields[2],Transaction.TransactionType.valueOf(fields[2]),Double.parseDouble(fields[3]));
     }
 }
