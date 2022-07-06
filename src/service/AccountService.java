@@ -17,6 +17,10 @@ public class AccountService {
         return accountRepository.readAccounts();
     }
 
+    public void writeToCsv(List<Account> accounts){
+        accountRepository.writeAccounts(accounts);
+    }
+
     public Account validateLogin(List<Account> accounts, String accNum, String pin){
         if (accNum.length() != 6) {
             System.out.println("Account Number should have 6 digits length");

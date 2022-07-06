@@ -4,6 +4,7 @@ import entity.Account;
 import util.CheckDuplicate;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -50,7 +51,24 @@ public class AccountRepository {
         return new Account(fields[0], fields[1], Double.parseDouble(fields[2]), fields[3]);
     }
 
+    public void writeAccounts(List<Account> accounts){
+        try(BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)){
+            for(var acc : convertToString(accounts)){
+                writer.write(acc);
+                writer.newLine();
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }
 
+    private List<String> convertToString(List<Account> accounts){
+        return accounts.stream()
+                .map(acc -> new String[]{acc.getName(),acc.getPin(), String.valueOf(acc.getBalance()),acc.getAccountNumber()})
+                .map(a -> String.join(",",a))
+                .toList();
+    }
 
 
 }

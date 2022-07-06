@@ -41,9 +41,11 @@ public class TransactionService {
                 "\nDate: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm a")) +
                 "\nWithdraw: $" + amount +
                 "\nBalance: " + account.getBalance());
-        //transactionRepository.readTransactions().add(new Transaction(account.getAccountNumber(), Transaction.TransactionType.WITHDRAW,amount));
         var trx = new Transaction(account.getAccountNumber(),"######", Transaction.TransactionType.WITHDRAW,amount);
         addTrx(trx);
+        // write to csv
+        //accountService.writeToCsv(accountService.getAll());
+        transactionRepository.writeTransactions(getTrxHistories());
         return account;
     }
 
@@ -83,6 +85,9 @@ public class TransactionService {
         }
         var trx =  new Transaction(accountService.getLoggedAcc().getAccountNumber(),destination, Transaction.TransactionType.TRANSFER, amount);
         addTrx(trx);
+        // write to csv
+        // accountService.writeToCsv(accountService.getAll());
+        transactionRepository.writeTransactions(getTrxHistories());
         return trx;
     }
 }
