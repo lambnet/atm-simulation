@@ -31,32 +31,35 @@ public class TransactionService {
         return trxHistories;
     }
 
-    public Account withdraw(int amount){
+    public void withdraw(int amount){
         var account = accountService.getLoggedAcc();
         if (amount > account.getBalance()) {
             System.out.println("Insufficient balance $" + amount);
+        }else{
+            account.setBalance(account.getBalance() - amount);
+            System.out.printf(""" 
+                    Withdraw Summary
+                    Date: %tF 
+                    Withdraw: $%d
+                    Balance: $%.2f
+                    %n""", LocalDateTime.now(), amount, account.getBalance());
+
+            var trx = new Transaction(account.getAccountNumber(),"######", Transaction.TransactionType.WITHDRAW,amount);
+            addTrx(trx);
+            // write to csv
+            //accountService.writeToCsv(accountService.getAll());
+            transactionRepository.writeTransactions(getTrxHistories());
         }
-        account.setBalance(account.getBalance() - amount);
-        System.out.println("Summary " +
-                "\nDate: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm a")) +
-                "\nWithdraw: $" + amount +
-                "\nBalance: " + account.getBalance());
-        var trx = new Transaction(account.getAccountNumber(),"######", Transaction.TransactionType.WITHDRAW,amount);
-        addTrx(trx);
-        // write to csv
-        //accountService.writeToCsv(accountService.getAll());
-        transactionRepository.writeTransactions(getTrxHistories());
-        return account;
     }
 
     public Account findAcc(String accNumber) {
         return accountService.getAll().stream()
                 .filter(a -> a.getAccountNumber().equals(accNumber))
-                .findAny().get();
+                .findAny().orElseThrow();
     }
 
     public Transaction processTransfer(String destination, int amount, String reference){
-        if (!destination.matches("\\d+") || !accountService.IsExist(accountService.getAll(), destination)) {
+        if (!destination.matches("\\d+") || !accountService.isExist(accountService.getAll(), destination)) {
             System.out.println("Invalid Account");
             return null;
         }

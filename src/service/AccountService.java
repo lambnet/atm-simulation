@@ -39,10 +39,10 @@ public class AccountService {
             System.out.println("PIN should only contains numbers [0-9]");
             return null;
         }
-        if (IsExist(accounts, accNum, pin)) {
-            return loggedAcc = accounts.stream()
-                    .filter(a -> a.getAccountNumber().equals(accNum) && a.getPin().equals(pin))
-                    .findAny().get();
+        if (isExist(accounts, accNum, pin)) {
+            var account = findAcc(accounts,accNum,pin);
+            setLoggedAcc(account);
+            return account;
         } else {
             System.out.println("Invalid Account Number/PIN");
             return null;
@@ -53,19 +53,23 @@ public class AccountService {
         return loggedAcc;
     }
 
-    public boolean IsExist(List<Account> accounts, String accNum, String pin) {
+    public void setLoggedAcc(Account account){
+        this.loggedAcc = account;
+    }
+
+    public boolean isExist(List<Account> accounts, String accNum, String pin) {
         return accounts.stream().anyMatch(
                 acc -> acc.getAccountNumber().equals(accNum) && acc.getPin().equals(pin));
     }
 
-    public boolean IsExist(List<Account> accounts, String accNum) {
+    public boolean isExist(List<Account> accounts, String accNum) {
         return accounts.stream().anyMatch(
                 acc -> acc.getAccountNumber().equals(accNum));
     }
 
-    public Account findAcc(List<Account> accounts, String accNumber) {
+    public Account findAcc(List<Account> accounts, String accNumber, String pin) {
         return accounts.stream()
-                .filter(a -> a.getAccountNumber().equals(accNumber))
-                .findAny().get();
+                .filter(a -> a.getAccountNumber().equals(accNumber) && a.getPin().equals(pin))
+                .findAny().orElseThrow();
     }
 }

@@ -1,6 +1,5 @@
 package repository;
 
-import entity.Account;
 import entity.Transaction;
 
 import java.io.BufferedReader;
@@ -14,6 +13,7 @@ import java.util.List;
 
 public class TransactionRepository {
     private final Path path;
+    private static final int TRANSACTION_COLUMN_LENGTH = 6;
 
     public TransactionRepository(Path path){
         this.path = path;
@@ -27,7 +27,6 @@ public class TransactionRepository {
                     .map(this::getTransaction)
                     .toList();
         }catch (IOException e){
-            e.printStackTrace();
             System.exit(0);
         }
         return transactions;
@@ -35,7 +34,7 @@ public class TransactionRepository {
 
     private Transaction getTransaction(String line){
         String[] fields = line.split(",");
-        if(fields.length != 6){
+        if(fields.length != TRANSACTION_COLUMN_LENGTH){
             throw new RuntimeException("Invalid line in csv file " + line);
         }
         return new Transaction(fields[1], fields[2],Transaction.TransactionType.valueOf(fields[2]),Double.parseDouble(fields[3]));
@@ -54,7 +53,8 @@ public class TransactionRepository {
     }
 
     private List<String> convertToString(List<Transaction> transactions){
-        return transactions.stream()
+        return transactions
+                .stream()
                 .map(trx -> new String[]{String.valueOf(trx.getId()),trx.getSenderAccountNumber(),trx.getReceiverAccountNumber(), String.valueOf(trx.getTransactionType()),
                         String.valueOf(trx.getAmount()), String.valueOf(trx.getCreatedAt())})
                 .map(r -> String.join(", ",r))
