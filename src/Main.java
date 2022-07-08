@@ -32,24 +32,27 @@ public class Main {
 
     public static void welcomeScreen() {
         System.out.println("=== ATM Welcome Screen === ");
-        System.out.println("Enter entity.Account Number: ");
+        System.out.println("Enter Account Number: ");
         var accNum = scanner.nextLine();
         System.out.println("Enter PIN: ");
         var pin = scanner.nextLine();
         var authenticatedAcc = accountService.validateLogin(accountService.getAll(), accNum, pin);
         if (!(isNull(authenticatedAcc))) {
             transactionScreen();
+        }else{
+            welcomeScreen();
         }
     }
 
     public static void transactionScreen() {
         System.out.println("=== Transaction Screen ===");
-        System.out.println("" +
-                "1. Withdraw \n" +
-                "2. Fund Transfer \n" +
-                "3. Transaction History \n" +
-                "4. Exit \n" +
-                "Please choose option[4]: ");
+        System.out.println("""
+                1. Withdraw
+                2. Fund Transfer
+                3. Transaction History
+                4. Exit
+                Please choose option[4]:
+                """);
         String input = scanner.nextLine();
         switch (input) {
             case "1" -> withdrawScreen();
@@ -61,36 +64,21 @@ public class Main {
 
     public static void withdrawScreen() {
         System.out.println("=== Withdraw Screen ===");
-        System.out.println("" +
-                "1. $10 \n" +
-                "2. $50 \n" +
-                "3. 100 \n" +
-                "4. Other \n" +
-                "5. Back \n" +
-                "Please choose option[5]: ");
+        System.out.println("""
+                1. $10
+                2. $50
+                3. 100
+                4. Other
+                5. Back
+                Please choose option[5]:""");
         String input = scanner.nextLine();
         int amount = 0;
         switch (input) {
             case "1" -> amount = 10;
             case "2" -> amount = 50;
             case "3" -> amount = 100;
-            case "4" -> {
-                try {
-                    System.out.println("Other withdraw amount to withdraw: ");
-                    amount = Integer.parseInt(scanner.nextLine());
-                    if (amount > 1000) {
-                        System.out.println("Maximum amount to withdraw is $1000");
-                    }
-                    if (amount % 10 != 0) {
-                        System.out.println("Invalid amount");
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid amount");
-                } finally {
-                    scanner.nextLine();
-                }
-            }
-            default -> transactionScreen();
+            case "4" -> amount = otherWithdrawScreen();
+            default -> withdrawScreen();
         }
         if (amount > 0) {
             transactionService.withdraw(amount);
@@ -98,7 +86,28 @@ public class Main {
         }
     }
 
-    public static void transferScreen(){
+    private static int otherWithdrawScreen() {
+        int amount=0;
+        try {
+            System.out.println("Other withdraw amount to withdraw: ");
+            amount = Integer.parseInt(scanner.nextLine());
+            if (amount > 1000) {
+                System.out.println("Maximum amount to withdraw is $1000");
+                withdrawScreen();
+            }
+            if (amount % 10 != 0) {
+                System.out.println("Invalid amount");
+                withdrawScreen();
+            }
+            return amount;
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid amount");
+            withdrawScreen();
+        }
+        return amount;
+    }
+
+    public static void transferScreen() {
         System.out.println("=== Transfer Fund Screen ===");
         System.out.println("Please enter destination account and press enter to continue or press enter to go back to Transaction: ");
         String destination = scanner.nextLine();
@@ -119,8 +128,8 @@ public class Main {
         String option = scanner.nextLine();
         switch (option) {
             case "1" -> {
-                if(!isNull(transactionService.processTransfer(destination,Integer.parseInt(amount), reference))){
-                    transferSummaryScreen(destination,amount,reference);
+                if (!isNull(transactionService.processTransfer(destination, Integer.parseInt(amount), reference))) {
+                    transferSummaryScreen(destination, amount, reference);
                 }
             }
             default -> {
@@ -129,7 +138,7 @@ public class Main {
         }
     }
 
-    public static void transferSummaryScreen(String destination, String amount, String reference){
+    public static void transferSummaryScreen(String destination, String amount, String reference) {
         System.out.println("Fund transfer Summary");
         System.out.println("Destination Account: " + destination +
                 "\n Transfer amount: " + amount +
@@ -145,7 +154,7 @@ public class Main {
         }
     }
 
-    public static void transactionHistoryScreen(){
+    public static void transactionHistoryScreen() {
         var accTrx = transactionService.getTrxHistories().stream()
                 .filter(trx -> trx.getSenderAccountNumber().equals(accountService.getLoggedAcc().getAccountNumber()))
                 .sorted(Comparator.comparing(Transaction::getCreatedAt).reversed())
@@ -153,8 +162,8 @@ public class Main {
                 .toList();
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         System.out.println("Transaction Type || Sender Account Number || Receiver Account Number || Amount || Created At");
-        for(var trx : accTrx){
-            System.out.println(trx.getTransactionType()+"||"+trx.getSenderAccountNumber()+"||"+trx.getReceiverAccountNumber()+"||"+trx.getAmount()+"||"+trx.getCreatedAt().format(dateFormat));
+        for (var trx : accTrx) {
+            System.out.println(trx.getTransactionType() + "||" + trx.getSenderAccountNumber() + "||" + trx.getReceiverAccountNumber() + "||" + trx.getAmount() + "||" + trx.getCreatedAt().format(dateFormat));
         }
     }
 
