@@ -14,7 +14,7 @@ public class AccountService {
     }
 
     public List<Account> getAll(){
-        return accountRepository.readAccounts();
+        return accountRepository.getAll();
     }
 
     public void writeToCsv(List<Account> accounts){

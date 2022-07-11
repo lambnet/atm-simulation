@@ -1,7 +1,6 @@
 package repository;
 
 import entity.Account;
-import util.CheckDuplicate;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -10,19 +9,29 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class AccountRepository {
+public class AccountRepository implements IRepository{
     private final Path path;
     private static final int ACCOUNT_COLUMN_LENGTH = 4;
-
+    private List<Account> accounts;
     public AccountRepository(Path path) {
         this.path = path;
+        this.accounts = readFromFile();
     }
 
-    public List<Account> readAccounts() {
+    public List<Account> getAll(){
+        return accounts;
+    }
+
+    public Optional<Account> getByAccNumber(String accNumber){
+        return accounts.stream()
+                .filter(acc -> acc.getAccountNumber().equals(accNumber)).findFirst();
+    }
+
+    public List<Account> readFromFile() {
         List<Account> accounts = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             accounts = reader.lines()

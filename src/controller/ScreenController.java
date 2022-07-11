@@ -1,11 +1,9 @@
 package controller;
 
-import entity.Transaction;
 import service.AccountService;
 import service.TransactionService;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -15,7 +13,8 @@ public class ScreenController {
     private final Scanner scanner = new Scanner(System.in);
     private final AccountService accountService;
     private final TransactionService transactionService;
-
+    private static final int MAX_BOUND = 900000;
+    private static final int MIN_BOUND = 100000;
     public ScreenController(AccountService accountService, TransactionService transactionService) {
         this.accountService = accountService;
         this.transactionService = transactionService;
@@ -116,7 +115,7 @@ public class ScreenController {
                 Choose Option[2]:
                 %n""", destination, amount, reference);
         String option = scanner.nextLine();
-        if ("1".equals(option)) {
+        if (option.equals("1")) {
             if (!isNull(transactionService.processTransfer(destination, Integer.parseInt(amount), reference))) {
                 transferSummaryScreen(destination, amount, reference);
             } else {
@@ -140,18 +139,15 @@ public class ScreenController {
         System.out.println("2. Exit");
         System.out.println("Choose Option[2]");
         String input = scanner.nextLine();
-        switch (input) {
-            case "1" -> transactionScreen();
-            case "default" -> welcomeScreen();
+        if(input.equals("1")){
+            transactionScreen();
+        }else{
+            welcomeScreen();
         }
     }
 
     public void transactionHistoryScreen() {
-        var accTrx = transactionService.getTrxHistories().stream()
-                .filter(trx -> trx.getSenderAccountNumber().equals(accountService.getLoggedAcc().getAccountNumber()))
-                .sorted(Comparator.comparing(Transaction::getCreatedAt).reversed())
-                .limit(10)
-                .toList();
+        var accTrx = transactionService.getTrxHistoryByAccNumber(accountService.getLoggedAcc().getAccountNumber());
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         System.out.println("Transaction Type || Sender Account Number || Receiver Account Number || Amount || Created At");
         for (var trx : accTrx) {
@@ -162,7 +158,7 @@ public class ScreenController {
 
     private static String generateReference(){
         var rand = new Random();
-        var reference = rand.nextInt(900000)+100000;
+        var reference = rand.nextInt(MAX_BOUND)+MIN_BOUND;
         return Integer.toString(reference);
     }
 }

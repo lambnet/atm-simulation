@@ -10,16 +10,29 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
-public class TransactionRepository {
+public class TransactionRepository implements IRepository{
     private final Path path;
+    private List<Transaction> transactions;
     private static final int TRANSACTION_COLUMN_LENGTH = 6;
 
     public TransactionRepository(Path path){
         this.path = path;
+        this.transactions = readFromFile();
     }
 
-    public List<Transaction> readTransactions(){
+    public List<Transaction> getAll(){
+        return transactions;
+    }
+
+    public Optional<Transaction> getByAccNumber(String accNumber){
+        return transactions.stream()
+                .filter(trx -> trx.getSenderAccountNumber().equals(accNumber))
+                .findFirst();
+    }
+
+    public List<Transaction> readFromFile(){
         List<Transaction> transactions = new LinkedList<>();
         try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)){
             transactions = reader.lines()

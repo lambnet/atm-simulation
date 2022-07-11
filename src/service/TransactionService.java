@@ -6,6 +6,7 @@ import repository.TransactionRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class TransactionService {
@@ -13,28 +14,28 @@ public class TransactionService {
     private final AccountService accountService;
     private List<Transaction> trxHistories = new ArrayList<>();
 
-    public TransactionService(TransactionRepository transactionRepository, AccountService accountService){
+    public TransactionService(TransactionRepository transactionRepository, AccountService accountService) {
         this.transactionRepository = transactionRepository;
         this.accountService = accountService;
     }
 
-    public List<Transaction> getAll(){
-        return transactionRepository.readTransactions();
+    public List<Transaction> getAll() {
+        return transactionRepository.getAll();
     }
 
-    public boolean addTrx(Transaction transaction){
+    public boolean addTrx(Transaction transaction) {
         return trxHistories.add(transaction);
     }
 
-    public List<Transaction> getTrxHistories(){
+    public List<Transaction> getTrxHistories() {
         return trxHistories;
     }
 
-    public void withdraw(int amount){
+    public void withdraw(int amount) {
         var account = accountService.getLoggedAcc();
         if (amount > account.getBalance()) {
             System.out.println("Insufficient balance $" + amount);
-        }else{
+        } else {
             account.setBalance(account.getBalance() - amount);
             System.out.printf(""" 
                     Withdraw Summary
@@ -43,7 +44,7 @@ public class TransactionService {
                     Balance: $%.2f
                     %n""", LocalDateTime.now(), amount, account.getBalance());
 
-            var trx = new Transaction(account.getAccountNumber(),"######", Transaction.TransactionType.WITHDRAW,amount);
+            var trx = new Transaction(account.getAccountNumber(), "######", Transaction.TransactionType.WITHDRAW, amount);
             addTrx(trx);
             // write to csv
             //accountService.writeToCsv(accountService.getAll());
@@ -57,7 +58,7 @@ public class TransactionService {
                 .findAny().orElseThrow();
     }
 
-    public Transaction processTransfer(String destination, int amount, String reference){
+    public Transaction processTransfer(String destination, int amount, String reference) {
         if (!destination.matches("\\d+") || !accountService.isExist(accountService.getAll(), destination)) {
             System.out.println("Invalid Account");
             return null;
@@ -67,7 +68,7 @@ public class TransactionService {
             return null;
         }
         try {
-            var dest = findAcc( destination);
+            var dest = findAcc(destination);
             if (amount > 1000) {
                 System.out.println("Maximum amount to transfer is $1000");
                 return null;
@@ -79,17 +80,25 @@ public class TransactionService {
             if (accountService.getLoggedAcc().getBalance() > amount) {
                 accountService.getLoggedAcc().setBalance(accountService.getLoggedAcc().getBalance() - amount);
                 dest.setBalance(dest.getBalance() + amount);
-            }else{
+            } else {
                 System.out.println("Insufficient balance $" + amount);
             }
         } catch (NumberFormatException e) {
             System.out.println("Invalid amount");
         }
-        var trx =  new Transaction(accountService.getLoggedAcc().getAccountNumber(),destination, Transaction.TransactionType.TRANSFER, amount);
+        var trx = new Transaction(accountService.getLoggedAcc().getAccountNumber(), destination, Transaction.TransactionType.TRANSFER, amount);
         addTrx(trx);
         // write to csv
         // accountService.writeToCsv(accountService.getAll());
         transactionRepository.writeTransactions(getTrxHistories());
         return trx;
+    }
+
+    public List<Transaction> getTrxHistoryByAccNumber(String accNumber) {
+        return trxHistories.stream()
+                .filter(trx -> trx.getSenderAccountNumber().equals(accNumber))
+                .sorted(Comparator.comparing(Transaction::getCreatedAt).reversed())
+                .limit(10)
+                .toList();
     }
 }
