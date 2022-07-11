@@ -36,7 +36,6 @@ public class AccountRepository {
                 .stream()
                 .map(Account::getAccountNumber)
                 .collect(Collectors.toSet());
-        System.out.println(duplicate.size());
         if(duplicate.size() < accounts.size()){
             System.out.println("There can't be 2 different accounts with the same Account Number");
             System.exit(0);
